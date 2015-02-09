@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        <meta charset="UTF-8">
+        <title></title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
+        <style>
+            .separator {
+                height:5px;
+                margin-top:1.5px;
+                margin-bottom:1.5px;
+                background:black;
+                width:3px;
+                display:block;
+                margin-left:auto;
+                margin-right:auto;
+            }
+            #w1, #w2, #q2 {
+                height:3px;
+                background:black;
+                width:29px;
+                display:block;
+                margin-left:auto;
+                margin-right:auto;
+            }
+            #q1, #q3 {
+                display:block;
+                width:29px;
+                border: 2px solid black;
+                margin-left:auto;
+                margin-right:auto;
+            }
+            #q1 {
+                border-top:0;
+            }
+            #q3 {
+                border-bottom:0;
+            }
+        </style>
+        <script>
+
+            function Whisker ($data) {
+
+                $data.sort();
+                this.data = $data;
+
+                this.draw = function(height, target) {
+
+                    var total = 0;
+                    $.each(this.data,function() {
+                        total += this;
+                    });
+
+                    var count = this.data.length;
+                    var range = this.data[count-1] - this.data[0];
+                    var cvr = height / total;
+                    console.log("cvr is "+ cvr);
+                    var rd = [cvr*this.w1, cvr*this.q1, cvr*this.q2, cvr*this.q3, cvr*this.w2];
+
+                    var sep_ht = 5;
+                    var sep_pd = 3;
+                    var top_parts = Math.floor((cvr*rd[4]) / (sep_ht + sep_pd));
+                    var bottom_parts = Math.floor((cvr*rd[0]) / (sep_ht + sep_pd));
+                    console.log(top_parts);
+                    var html =
+                            '<span id="w2" class="whisker"></span>';
+                    for (var $i=0; $i <= top_parts; $i++) {
+                        html += '<span class="separator"></span>';
+                    }
+
+                    html += '<span id="q3" style="height:'+Math.floor(cvr*rd[3])+'px"></span>';
+                    html += '<span id="q2"></span>';
+                    html += '<span id="q1" style="height:'+Math.floor(cvr*rd[1])+'px"></span>';
+
+                    for (var $i=0; $i <= bottom_parts; $i++) {
+                        html += '<span class="separator"></span>';
+                    }
+
+                    html += '<span id="w1" class="whisker"></span>';
+
+                    $(target).html(html);
+                }
+
+                this.calculate = function() {
+                    console.log($data);
+
+                    $data = this.data;
+
+                    $data.sort();
+
+                    this.q1 = this.median ( $data );
+                    var count = $data.length;
+                    console.log(count)
+                    if (this.isEven(count))
+                    {
+                        //take two middle values out
+                        var mod = count % 2;
+                        var $lower_data = this.splice($data, 0, mod - 1);
+                        console.log($data);
+                        var $upper_data = this.splice($data, mod+2, count+1)
+                    }
+                    else
+                    {
+                        var splice_at = Math.floor(count/2);
+                        var $lower_data = this.splice($data, 0, splice_at - 1);
+                        var $upper_data = this.splice($data, splice_at+1, count-1);
+                    }
+
+                    this.q2 = this.median( $lower_data );
+                    this.q3 = this.median( $upper_data );
+
+                    this.w1 = $data[0];
+                    this.w2 = $data[count - 1];
+                }
+
+                this.median = function($array) {
+
+                    var count = $array.length;
+
+                    if (this.isEven($array))
+                        return $array[count % 2];
+
+                    return ( ($array[(count % 2)] + $array[((count % 2) + 1)]) / 2 );
+                }
+
+                this.isEven = function($number) {
+                        if ($number % 2 !== 0)
+                            return false;
+
+                        return true;
+                }
+
+                this.splice = function($data, $start, $end) {
+                        var clone = $data.slice();
+                        return clone.slice($start, $end);
+                }
+
+                this.calculate();
+                console.log(this)
+
+            };
+
+        </script>
+    </head>
+    <body>
+        <div id="ex"></div>
+
+        <script>
+
+            var dataset = [4.3,  5.1,  10.9,  4.5,  4.4,  4.9,  5.0,  4.7,  4.1,  4.6,  4.4,  4.3,  4.8,  4.4,  4.2,  4.5,  4.4];
+
+            var w = new Whisker(dataset)
+
+            w.draw(300, '#ex');
+        </script>
+    </body>
+</html>
